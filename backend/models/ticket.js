@@ -6,14 +6,14 @@ const ticketSchema = new mongoose.Schema({
   status: { type: String, default: "TODO" },
   priority: {
     type: String,
+    enum: ["low", "medium", "high"],
   },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  createdBy: { type: String, ref: "User" },
   assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "User",
     default: null,
   },
-  priority: { type: String },
   deadline: { type: Date },
 
   helpfulNotes: String,
