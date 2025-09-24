@@ -1,6 +1,4 @@
-import clerkClient from "@clerk/clerk-sdk-node";
 import User from "../models/user.js";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { Clerk } from "@clerk/clerk-sdk-node";
 
 // Initialize Clerk with your secret key
