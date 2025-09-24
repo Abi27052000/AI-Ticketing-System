@@ -1,8 +1,5 @@
-import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import "./App.css";
 import {
   SignedIn,
@@ -10,64 +7,151 @@ import {
   SignInButton,
   SignUpButton,
   UserButton,
+  useUser,
 } from "@clerk/clerk-react";
 import SignInPage from "./auth/SignInPage";
 import SignUpPage from "./auth/SignUpPage";
 import HomePage from "./pages/HomePage";
+import AdminDashboard from "./pages/AdminDashboard";
+
+// Role-based router component
+const RoleBasedRouter = () => {
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-xl p-8">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-600">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
+  // Get user role from Clerk public metadata
+  const userRole = user.publicMetadata?.role;
+
+  // Redirect based on role
+  switch (userRole.toLowerCase()) {
+    case "admin":
+      return <Navigate to="/admin/dashboard" replace />;
+    case "moderator":
+      return <Navigate to="/moderator/dashboard" replace />;
+    case "member":
+    default:
+      return <Navigate to="/user/dashboard" replace />;
+  }
+};
 
 // Placeholder components for different roles
-const UserDashboard = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">User Dashboard</h1>
-    <p>Welcome to the user dashboard!</p>
-  </div>
-);
+const MemberDashboard = () => {
+  const { user } = useUser();
 
-const ModeratorDashboard = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Moderator Dashboard</h1>
-    <p>Welcome to the moderator dashboard!</p>
-  </div>
-);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Member Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Welcome back, {user?.firstName || "Member"}!
+              </p>
+            </div>
+            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              Member
+            </div>
+          </div>
 
-const AdminDashboard = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-    <p>Welcome to the admin dashboard!</p>
-  </div>
-);
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">My Tickets</h3>
+              <p className="text-gray-600 text-sm">
+                View and manage your support tickets
+              </p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Profile</h3>
+              <p className="text-gray-600 text-sm">
+                Update your account information
+              </p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Help & Support
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Get help with using the platform
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-// const Home = () => (
-//   <div className="p-6">
-//     <h1 className="text-2xl font-bold mb-4">Welcome to AI Ticketing System</h1>
-//     <SignedIn>
-//       <div className="flex items-center gap-4">
-//         <p>You are signed in!</p>
-//         <UserButton />
-//       </div>
-//       <div className="mt-4">
-//         <p>Navigate to your dashboard:</p>
-//         <div className="flex gap-2 mt-2">
-//           <a href="/user/dashboard" className="text-blue-600 hover:underline">
-//             User Dashboard
-//           </a>
-//           <a
-//             href="/moderator/dashboard"
-//             className="text-green-600 hover:underline"
-//           >
-//             Moderator Dashboard
-//           </a>
-//           <a href="/admin/dashboard" className="text-red-600 hover:underline">
-//             Admin Dashboard
-//           </a>
-//         </div>
-//       </div>
-//     </SignedIn>
-//     <SignedOut>
-//       <p>Please sign in to access the ticketing system.</p>
-//     </SignedOut>
-//   </div>
-// );
+const ModeratorDashboard = () => {
+  const { user } = useUser();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Moderator Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Welcome back, {user?.firstName || "Moderator"}!
+              </p>
+            </div>
+            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              Moderator
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-green-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Ticket Management
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Review and moderate support tickets
+              </p>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                User Management
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Manage user accounts and permissions
+              </p>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Reports & Analytics
+              </h3>
+              <p className="text-gray-600 text-sm">
+                View system reports and statistics
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   return (
@@ -83,16 +167,16 @@ function App() {
 
       <SignedIn>
         <Routes>
-          {/* Home route */}
-          <Route path="/" element={<HomePage />} />
+          {/* Root path redirects based on user role */}
+          <Route path="/" element={<RoleBasedRouter />} />
 
-          {/* User routes */}
+          {/* User/Member routes */}
           <Route
             path="/user/*"
             element={
               <Routes>
-                <Route path="/" element={<UserDashboard />} />
-                <Route path="dashboard" element={<UserDashboard />} />
+                <Route path="/" element={<MemberDashboard />} />
+                <Route path="dashboard" element={<MemberDashboard />} />
                 <Route
                   path="tickets"
                   element={
